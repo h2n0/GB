@@ -1,5 +1,6 @@
 package uk.fls.h2n0.main.core;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,13 +20,13 @@ import uk.fls.h2n0.main.util.Renderer;
 
 public class World {
 
-	private Renderer r;
-	private List<Entity> entitys;
-	private byte[] tiles;
-	private byte[] data;
-	private final int w, h;
-	private Random rand;
-	public boolean spawn;
+	protected Renderer r;
+	protected List<Entity> entitys;
+	protected byte[] tiles;
+	protected byte[] data;
+	protected final int w, h;
+	protected Random rand;
+	protected boolean spawn;
 
 	public class EntitySorter implements Comparator<Entity> {
 		@Override
@@ -139,13 +140,11 @@ public class World {
 		int cx = c.pos.getIX();
 		int cy = c.pos.getIY();
 		
-		int tiles = 0;
-		
-		for (int x = 0; x <= c.w; x++) {
-			for (int y = 0; y <= c.h; y++) {
+		for (int x = 0; x <= this.w; x++) {
+			for (int y = 0; y <= this.h; y++) {
 				int px = (x * 8) - cx;
 				int py = (y * 8) - cy;
-				if(onScreen(px,py)){
+				if(onScreen(px/8,py/8)){
 					for (int i = 0; i < 8 * 8; i++) {
 						int dx = (i / 8);
 						int dy = (i % 8);
@@ -166,7 +165,7 @@ public class World {
 			int y = e.pos.getIY() - cy;
 			int s = 8;
 
-			if(!onScreen(x,y))continue;
+			if(!onScreen(x/8,y/8))continue;
 			boolean xf = (e.getData() & 0x2) > 0 ? true : false;
 			boolean yf = (e.getData() & 0x4) > 0 ? true : false;
 
@@ -227,14 +226,12 @@ public class World {
 	}
 
 	public void setTile(Tile t, int x, int y) {
-		if (!isValid(x, y) || this.getTile(x, y) == t)
-			return;
+		if (!isValid(x, y))return;
 		this.tiles[x + y * w] = t.id;
 	}
 
 	public Tile getTile(int x, int y) {
-		if (!isValid(x, y))
-			return Tile.grass;
+		if (!isValid(x, y))return Tile.voidTile;
 		return Tile.tiles[this.tiles[x + y * w]];
 	}
 
@@ -251,8 +248,9 @@ public class World {
 	}
 
 	public boolean isValid(int x, int y) {
-		if (x < 0 || y < 0 || x >= w || y >= h)
+		if (x < 0 || y < 0 || x >= w || y >= h){
 			return false;
+		}
 		else
 			return true;
 	}
@@ -294,7 +292,51 @@ public class World {
 	
 	public boolean onScreen(int x,int y){
 		int s = 8;
-		if(x < -s || y < -s || x > 160 + s || y >144 + s)return false;
+		if(x < -s || y < -s || x > 19 || y > 17)return false;
 		return true;
+	}
+	
+	public BufferedImage getImage(Entity p){
+		BufferedImage res = null;
+		int[] pix = new int[this.w * this.h];
+		for(int i = 0; i < pix.length; i++){
+			int tx = i % this.w;
+			int ty = i / this.w;
+			Tile t = this.getTile(tx, ty);
+			
+			if(t == Tile.grass){
+				pix[tx + ty * this.w] = 0x00CC00;
+			}else if(t == Tile.rock){
+				pix[tx + ty * this.w] = 0xCCCCCC;
+			}else if(t == Tile.wall){
+				pix[tx + ty * this.w] = 0x777777;
+			}else if(t == Tile.water){
+				pix[tx + ty * this.w] = 0x0000CC;
+			}else{
+				pix[tx + ty * this.w] = 0x000000;
+			}
+			
+			if(tx == p.pos.getIX()/8 && ty == p.pos.getIY()/8){
+				pix[tx + ty * this.w] = 0xFFFF00;
+			}
+		}
+		
+		res = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		res.setRGB(0, 0, w, h, pix, 0, w);
+		return res;
+	}
+	
+	public Point findSpawn(Tile t){
+		int ex = 0;
+		int ey = 0;
+		while(true){
+			int tx = this.rand.nextInt(w);
+			int ty = this.rand.nextInt(h);
+			ex = tx;
+			ey = ty;
+			Tile ti = getTile(tx, ty);
+			if(ti == t)break;
+		}
+		return new Point(ex,ey);
 	}
 }

@@ -9,6 +9,7 @@ public class Tile {
 	public static Tile wall = new WallTile(1);
 	public static Tile rock = new RockTile(2);
 	public static Tile water = new WaterTile(3);
+	public static Tile voidTile = new VoidTile(4);
 	
 	
 	public final String dataPos;

@@ -18,6 +18,7 @@ public class Word{
 	public void render(Renderer r, String newPhrase){
 		if(newPhrase == this.last)return;
 		else{
+			int shade = r.getShade(this.pos.getIX(), this.pos.getIY());
 			this.letters = new Letter[newPhrase.length()];
 			for(int i = 0; i < letters.length; i++){
 				this.letters[i] = new Letter(newPhrase.substring(i,i+1), this.pos.getIX() + i * 8, this.pos.getIY(), this.shade);

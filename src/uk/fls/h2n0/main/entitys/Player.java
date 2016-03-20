@@ -35,7 +35,8 @@ public class Player extends Entity{
 		
 		boolean moving = !canMove;
 		if(moving){
-			float speed = (7/30f)/2f;
+			boolean debug = true;
+			float speed = debug?(7/30f):(7/30f)/2f;
 			
 			
 			float cx = this.pos.x / 8;
@@ -118,5 +119,10 @@ public class Player extends Entity{
 	
 	public void attack(){
 		this.w.addEntity(new SwordSlash(this.dir,(this.data & 0x2) > 0,this.pos));
+	}
+	
+	public void superMove(int x,int y){
+		this.tx = x;
+		this.ty = y;
 	}
 }
